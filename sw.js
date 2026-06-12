@@ -1,4 +1,4 @@
-const CACHE_NAME = 'assistant-web-v3';
+const CACHE_NAME = 'assistant-web-v6';
 const ASSETS = [
   '/',
   '/index.html',

@@ -102,6 +102,34 @@ body.dark-theme .btn-delete { background: #321A1A; }
 
 .stats-brief { margin-bottom: 15px; font-size: 13px; color: var(--text-sub); text-align: center; }
 
+.exam-settings {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    background: var(--bg-color);
+    padding: 10px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+#exam-q-count {
+    width: 60px;
+    padding: 6px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 16px;
+    outline: none;
+    background: var(--card-bg);
+    color: var(--text-main);
+}
+
+#exam-q-count:focus { border-color: var(--primary-color); }
+
 /* Modal Mode Selection */
 .mode-options {
     display: flex;
@@ -110,7 +138,7 @@ body.dark-theme .btn-delete { background: #321A1A; }
     margin: 20px 0;
 }
 
-.btn-primary-mode, .btn-secondary-mode {
+.btn-primary-mode, .btn-secondary-mode, .btn-accent-mode {
     display: flex;
     align-items: center;
     padding: 16px;
@@ -121,6 +149,12 @@ body.dark-theme .btn-delete { background: #321A1A; }
     cursor: pointer;
     box-shadow: var(--shadow);
     transition: transform 0.1s;
+    margin-bottom: 8px;
+}
+
+.btn-accent-mode {
+    background: #FF9800;
+    color: white;
 }
 
 .btn-primary-mode:active, .btn-secondary-mode:active {
@@ -171,6 +205,39 @@ body.dark-theme .btn-delete { background: #321A1A; }
     cursor: pointer;
 }
 
+/* General Buttons */
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    background: var(--bg-color);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.btn-text-danger {
+    background: none;
+    border: none;
+    color: var(--danger);
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 8px;
+}
+
 /* Quiz & View Styles (Preserved & Polished) */
 .quiz-header { background: var(--card-bg); padding: 16px 20px; box-shadow: var(--shadow); }
 .progress-bar-container { height: 6px; background: var(--border-color); border-radius: 3px; overflow: hidden; }
@@ -208,3 +275,39 @@ body.dark-theme .btn-delete { background: #321A1A; }
 .high-score-msg { color: var(--success); font-weight: 700; margin-top: 10px; font-size: 14px; }
 .empty-state { text-align: center; padding: 50px 20px; color: var(--text-sub); }
 .empty-state .logo { font-size: 60px; margin-bottom: 15px; opacity: 0.5; }
+
+/* Quiz Footer & Centered Next Button */
+.quiz-footer {
+    padding: 16px 20px 30px;
+    background: var(--card-bg);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    border-top: 1px solid var(--border-color);
+}
+
+.next-btn-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.btn-primary-centered {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 18px 60px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 18px;
+    box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+    cursor: pointer;
+    transition: transform 0.1s, background-color 0.2s;
+    width: 80%; /* Фиксированная ширина для красоты на мобильных */
+    max-width: 300px;
+}
+
+.btn-primary-centered:active {
+    transform: scale(0.95);
+    background-color: var(--primary-dark);
+}

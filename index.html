@@ -37,12 +37,25 @@
         <div class="modal-content">
             <h2 id="modal-test-title">Название теста</h2>
             <div id="test-stats-brief" class="stats-brief"></div>
+            
+            <div class="exam-settings">
+                <span>Кол-во вопросов:</span>
+                <input type="number" id="exam-q-count" min="1" value="20">
+            </div>
+
             <div class="mode-options">
                 <button id="mode-quiz-btn" class="btn-primary-mode">
                     <span class="btn-icon">📝</span>
                     <div class="btn-text-content">
                         <span class="btn-title">Экзамен</span>
                         <small>Случайный порядок, на оценку</small>
+                    </div>
+                </button>
+                <button id="mode-mistakes-btn" class="btn-accent-mode hidden">
+                    <span class="btn-icon">🔥</span>
+                    <div class="btn-text-content">
+                        <span class="btn-title">Работа над ошибками</span>
+                        <small id="mistakes-count-label">0 ошибок найдено</small>
                     </div>
                 </button>
                 <button id="mode-view-btn" class="btn-secondary-mode">

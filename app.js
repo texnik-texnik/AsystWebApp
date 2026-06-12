@@ -1,5 +1,5 @@
 /**
- * Assistant Web - Advanced Persistence & UI Fixes
+ * Assistant Web - Enhanced Edition (Vibration & Mistake Review)
  */
 
 // --- 1. IndexedDB Setup ---
@@ -20,7 +20,7 @@ let currentQuiz = { name: '', questions: [], activeQuestions: [] };
 let currentQuestionIndex = 0;
 let score = 0;
 let isAnswered = false;
-let currentMode = 'quiz';
+let currentMode = 'quiz'; // 'quiz', 'view', 'mistakes'
 let catalogData = [];
 
 // --- 3. DOM Elements ---
@@ -53,11 +53,15 @@ function parseTestContent(text) {
     const questions = [];
     let currentQ = null;
 
-    lines.forEach(line => {
+    lines.forEach((line, index) => {
         const trimmed = line.trim();
         if (trimmed.startsWith('?')) {
             if (currentQ && currentQ.options.length > 0) questions.push(currentQ);
-            currentQ = { questionParts: [trimmed.substring(1).trim()], options: [] };
+            currentQ = { 
+                id: Date.now() + index, // Уникальный ID для отслеживания ошибок
+                questionParts: [trimmed.substring(1).trim()], 
+                options: [] 
+            };
         } else if (currentQ) {
             if (trimmed.startsWith('+') || trimmed.startsWith('-')) {
                 currentQ.options.push({ text: trimmed.substring(1).trim(), isCorrect: trimmed.startsWith('+') });
@@ -68,7 +72,7 @@ function parseTestContent(text) {
         }
     });
     if (currentQ && currentQ.options.length > 0) questions.push(currentQ);
-    return questions.map(q => ({ question: q.questionParts.join(' ').trim(), options: q.options })).filter(q => q.question !== '');
+    return questions.map(q => ({ id: q.id, question: q.questionParts.join(' ').trim(), options: q.options })).filter(q => q.question !== '');
 }
 
 // --- 6. Catalog Logic ---
@@ -85,13 +89,12 @@ document.getElementById('fileInput').addEventListener('change', e => {
                 questions, 
                 lastScore: null, 
                 highScore: null, 
-                lastIndexQuiz: 0,
                 lastIndexView: 0,
-                totalTaken: 0, 
+                failedIds: [], // Список ID вопросов с ошибками
                 date: Date.now() 
             });
             tx.oncomplete = () => { e.target.value = ''; renderCatalog(); };
-        } else alert("Ошибка: Неверный формат файла.");
+        } else alert("Ошибка формата.");
     };
     reader.readAsText(file, 'UTF-8');
 });
@@ -108,11 +111,12 @@ function renderCatalog() {
 function renderCatalogUI(tests) {
     const container = document.getElementById('tests-catalog');
     if (tests.length === 0) {
-        container.innerHTML = `<div class="empty-state"><div class="logo">${document.getElementById('catalog-search').value ? '🔍' : '📘'}</div><p>${document.getElementById('catalog-search').value ? 'Ничего не найдено' : 'Нет тестов. Нажмите +'}</p></div>`;
+        container.innerHTML = `<div class="empty-state"><div class="logo">📘</div><p>Нет тестов. Нажмите +</p></div>`;
         return;
     }
     container.innerHTML = tests.map(test => {
         const progress = test.lastIndexView ? Math.round((test.lastIndexView / (test.questions.length - 1)) * 100) : 0;
+        const mistakes = test.failedIds ? test.failedIds.length : 0;
         return `
         <div class="test-card">
             <div class="card-top">
@@ -122,6 +126,7 @@ function renderCatalogUI(tests) {
             <div class="card-stats">
                 ${test.highScore !== null ? `<span class="stat-tag">🏆 ${test.highScore}</span>` : ''}
                 ${progress > 0 ? `<span class="stat-tag">📖 ${progress}%</span>` : ''}
+                ${mistakes > 0 ? `<span class="stat-tag" style="background: #FFF3E0; color: #E65100;">🔥 ${mistakes} ош.</span>` : ''}
             </div>
             <button class="btn-run" onclick="openModeSelection('${test.name.replace(/'/g, "\\'")}')">Открыть тест</button>
         </div>
@@ -136,13 +141,23 @@ window.deleteTest = name => {
     }
 };
 
-// --- 7. Mode & Navigation ---
+// --- 7. Mode Selection ---
 window.openModeSelection = name => {
     const store = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME);
     store.get(name).onsuccess = e => {
         currentQuiz = e.target.result;
         document.getElementById('modal-test-title').innerText = currentQuiz.name;
-        document.getElementById('test-stats-brief').innerText = currentQuiz.highScore !== null ? `Рекорд: ${currentQuiz.highScore} из ${currentQuiz.questions.length}` : 'Вы еще не проходили этот тест';
+        
+        const mistakesBtn = document.getElementById('mode-mistakes-btn');
+        const mistakesCount = currentQuiz.failedIds ? currentQuiz.failedIds.length : 0;
+        
+        if (mistakesCount > 0) {
+            mistakesBtn.classList.remove('hidden');
+            document.getElementById('mistakes-count-label').innerText = `${mistakesCount} ошибок для повторения`;
+        } else {
+            mistakesBtn.classList.add('hidden');
+        }
+
         document.getElementById('modal-mode').classList.remove('hidden');
     };
 };
@@ -151,7 +166,12 @@ document.getElementById('modal-close-btn').onclick = () => document.getElementBy
 
 document.getElementById('mode-quiz-btn').onclick = () => {
     document.getElementById('modal-mode').classList.add('hidden');
-    startQuizMode();
+    startQuizMode('quiz');
+};
+
+document.getElementById('mode-mistakes-btn').onclick = () => {
+    document.getElementById('modal-mode').classList.add('hidden');
+    startQuizMode('mistakes');
 };
 
 document.getElementById('mode-view-btn').onclick = () => {
@@ -164,7 +184,7 @@ function showScreen(id) {
 }
 
 document.querySelectorAll('.back-to-catalog').forEach(b => b.onclick = () => {
-    if (screens.quiz.classList.contains('hidden') || confirm("Прервать тест и вернуться в меню?")) {
+    if (screens.quiz.classList.contains('hidden') || confirm("Прервать и вернуться в меню?")) {
         showScreen('welcome');
         renderCatalog();
     }
@@ -172,13 +192,23 @@ document.querySelectorAll('.back-to-catalog').forEach(b => b.onclick = () => {
 
 document.getElementById('restartBtn').onclick = () => showScreen('welcome');
 
-// --- 8. Quiz Mode ---
-function startQuizMode() {
-    currentMode = 'quiz';
+// --- 8. Quiz Mode (Standard & Mistakes) ---
+function startQuizMode(mode) {
+    currentMode = mode;
     currentQuestionIndex = 0;
     score = 0;
-    currentQuiz.activeQuestions = JSON.parse(JSON.stringify(currentQuiz.questions));
-    shuffle(currentQuiz.activeQuestions);
+    
+    if (mode === 'mistakes') {
+        const failedQuestions = currentQuiz.questions.filter(q => currentQuiz.failedIds.includes(q.id));
+        currentQuiz.activeQuestions = JSON.parse(JSON.stringify(failedQuestions));
+    } else {
+        const selectedCount = parseInt(document.getElementById('exam-q-count').value) || currentQuiz.questions.length;
+        const allQuestions = JSON.parse(JSON.stringify(currentQuiz.questions));
+        shuffle(allQuestions);
+        currentQuiz.activeQuestions = allQuestions.slice(0, selectedCount);
+    }
+    
+    if (mode !== 'mistakes') shuffle(currentQuiz.activeQuestions);
     showScreen('quiz');
     renderQuizQuestion();
 }
@@ -190,7 +220,7 @@ function renderQuizQuestion() {
     const q = currentQuiz.activeQuestions[currentQuestionIndex];
     const total = currentQuiz.activeQuestions.length;
 
-    document.getElementById('progress-text').innerText = `Вопрос ${currentQuestionIndex + 1} из ${total}`;
+    document.getElementById('progress-text').innerText = `${currentMode === 'mistakes' ? '🔥 Ошибки:' : 'Вопрос'} ${currentQuestionIndex + 1} из ${total}`;
     document.getElementById('progress-fill').style.width = `${((currentQuestionIndex + 1) / total) * 100}%`;
     document.getElementById('question-text').innerText = q.question;
 
@@ -201,43 +231,73 @@ function renderQuizQuestion() {
         const btn = document.createElement('button');
         btn.className = 'option-btn';
         btn.innerText = opt.text;
-        btn.onclick = () => {
-            if (isAnswered) return;
-            isAnswered = true;
-            if (opt.isCorrect) { score++; btn.classList.add('correct'); }
-            else {
-                btn.classList.add('wrong');
-                const correctText = currentQuiz.activeQuestions[currentQuestionIndex].options.find(o => o.isCorrect).text;
-                document.querySelectorAll('#options-container .option-btn').forEach(b => {
-                    if (b.innerText === correctText) b.classList.add('correct');
-                });
-            }
-            document.getElementById('quiz-next-btn').classList.remove('hidden');
-            document.getElementById('quiz-skip-btn').classList.add('hidden');
-        };
+        btn.onclick = () => handleAnswer(btn, opt.isCorrect, q.id);
         document.getElementById('options-container').appendChild(btn);
     });
 }
 
-document.getElementById('quiz-next-btn').onclick = () => nextStep();
-document.getElementById('quiz-skip-btn').onclick = () => nextStep();
-document.getElementById('quiz-finish-btn').onclick = () => { if (confirm("Завершить тест и показать результат?")) finishQuiz(); };
+function handleAnswer(btn, isCorrect, qId) {
+    if (isAnswered) return;
+    isAnswered = true;
 
-function nextStep() {
+    if (isCorrect) {
+        score++;
+        btn.classList.add('correct');
+        // Вибрация: Короткая при успехе
+        if (navigator.vibrate) navigator.vibrate(40);
+        
+        // Удаляем из ошибок, если ответили верно
+        if (currentQuiz.failedIds) {
+            currentQuiz.failedIds = currentQuiz.failedIds.filter(id => id !== qId);
+        }
+    } else {
+        btn.classList.add('wrong');
+        // Вибрация: Двойная при ошибке
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+        
+        // Добавляем в ошибки
+        if (!currentQuiz.failedIds) currentQuiz.failedIds = [];
+        if (!currentQuiz.failedIds.includes(qId)) currentQuiz.failedIds.push(qId);
+        
+        const correctText = currentQuiz.activeQuestions[currentQuestionIndex].options.find(o => o.isCorrect).text;
+        document.querySelectorAll('#options-container .option-btn').forEach(b => {
+            if (b.innerText === correctText) b.classList.add('correct');
+        });
+    }
+    document.getElementById('quiz-next-btn').classList.remove('hidden');
+    document.getElementById('quiz-skip-btn').classList.add('hidden');
+}
+
+document.getElementById('quiz-next-btn').onclick = () => {
     currentQuestionIndex++;
     if (currentQuestionIndex < currentQuiz.activeQuestions.length) renderQuizQuestion();
     else finishQuiz();
-}
+};
+
+document.getElementById('quiz-skip-btn').onclick = () => {
+    currentQuestionIndex++;
+    if (currentQuestionIndex < currentQuiz.activeQuestions.length) renderQuizQuestion();
+    else finishQuiz();
+};
+
+document.getElementById('quiz-finish-btn').onclick = () => { if (confirm("Завершить тест?")) finishQuiz(); };
 
 function finishQuiz() {
     const tx = db.transaction(STORE_NAME, 'readwrite');
     const store = tx.objectStore(STORE_NAME);
-    currentQuiz.lastScore = score;
-    if (currentQuiz.highScore === null || score > currentQuiz.highScore) {
-        currentQuiz.highScore = score;
-        document.getElementById('high-score-msg').innerText = "🎉 Новый рекорд!";
-    } else document.getElementById('high-score-msg').innerText = "";
-    currentQuiz.totalTaken++;
+    
+    // Сохраняем статистику только для обычного режима
+    if (currentMode === 'quiz') {
+        currentQuiz.lastScore = score;
+        if (currentQuiz.highScore === null || score > currentQuiz.highScore) {
+            currentQuiz.highScore = score;
+            document.getElementById('high-score-msg').innerText = "🎉 Новый рекорд!";
+        } else document.getElementById('high-score-msg').innerText = "";
+        currentQuiz.totalTaken++;
+    } else {
+        document.getElementById('high-score-msg').innerText = "💪 Работа над ошибками завершена!";
+    }
+    
     store.put(currentQuiz);
     tx.oncomplete = () => {
         document.getElementById('score-result').innerText = score;
@@ -250,16 +310,10 @@ function finishQuiz() {
 // --- 9. View Mode ---
 function startViewMode() {
     currentMode = 'view';
-    // Проверка сохраненного прогресса
     if (currentQuiz.lastIndexView > 0) {
-        if (confirm(`Продолжить с вопроса №${currentQuiz.lastIndexView + 1}?`)) {
-            currentQuestionIndex = currentQuiz.lastIndexView;
-        } else {
-            currentQuestionIndex = 0;
-        }
-    } else {
-        currentQuestionIndex = 0;
-    }
+        if (confirm(`Продолжить с №${currentQuiz.lastIndexView + 1}?`)) currentQuestionIndex = currentQuiz.lastIndexView;
+        else currentQuestionIndex = 0;
+    } else currentQuestionIndex = 0;
     showScreen('view');
     renderViewQuestion();
 }
@@ -285,16 +339,11 @@ function renderViewQuestion() {
 
     document.getElementById('prevQuestionBtn').disabled = (currentQuestionIndex === 0);
     document.getElementById('nextQuestionBtn').disabled = (currentQuestionIndex === total - 1);
-
-    // Сохранение прогресса просмотра в БД
-    saveViewProgress();
-}
-
-function saveViewProgress() {
+    
+    // Автосохранение
     const tx = db.transaction(STORE_NAME, 'readwrite');
-    const store = tx.objectStore(STORE_NAME);
     currentQuiz.lastIndexView = currentQuestionIndex;
-    store.put(currentQuiz);
+    tx.objectStore(STORE_NAME).put(currentQuiz);
 }
 
 document.getElementById('prevQuestionBtn').onclick = () => { if (currentQuestionIndex > 0) { currentQuestionIndex--; renderViewQuestion(); } };
@@ -305,11 +354,9 @@ const performJump = () => {
     if (val >= 0 && val < currentQuiz.questions.length) { currentQuestionIndex = val; renderViewQuestion(); }
     else document.getElementById('jumpToQuestion').value = currentQuestionIndex + 1;
 };
-
 document.getElementById('btn-jump').onclick = performJump;
 document.getElementById('jumpToQuestion').onkeydown = e => { if (e.key === 'Enter') performJump(); };
 
-// --- Helpers ---
 function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -318,3 +365,4 @@ function shuffle(array) {
 }
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
+or.serviceWorker.register('/sw.js');
