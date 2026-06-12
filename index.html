@@ -6,6 +6,8 @@
     <title>Assistant Web</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <link rel="apple-touch-icon" href="icon.svg">
     <meta name="theme-color" content="#2196F3">
 </head>
 <body class="light-theme"> <!-- Тема по умолчанию -->
@@ -16,6 +18,9 @@
             <div class="header-top-row">
                 <h1>Assistant</h1>
                 <div class="header-actions">
+                    <button id="export-db" class="icon-btn" title="Экспорт базы">💾</button>
+                    <label for="import-db-input" class="icon-btn" title="Импорт базы">📂</label>
+                    <input type="file" id="import-db-input" accept=".json" style="display:none">
                     <button id="theme-toggle" class="icon-btn" title="Сменить тему">🌓</button>
                     <label for="fileInput" class="icon-btn-add">
                         <span>+</span>

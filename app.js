@@ -31,15 +31,53 @@ const screens = {
     results: document.getElementById('screen-results')
 };
 
-// --- 4. Theme & Search ---
+// --- 4. Theme, Search & Backup ---
 const themeToggle = document.getElementById('theme-toggle');
-if (localStorage.getItem('theme') === 'dark') document.body.classList.replace('light-theme', 'dark-theme');
+const exportBtn = document.getElementById('export-db');
+const importInput = document.getElementById('import-db-input');
 
-themeToggle.onclick = () => {
-    const isDark = document.body.classList.contains('dark-theme');
-    document.body.classList.toggle('dark-theme', !isDark);
-    document.body.classList.toggle('light-theme', isDark);
-    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+// Экспорт базы данных
+exportBtn.onclick = () => {
+    const store = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME);
+    store.getAll().onsuccess = e => {
+        const data = e.target.result;
+        const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `assistant_backup_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+};
+
+// Импорт базы данных
+importInput.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!confirm("Внимание! Импорт заменит существующие тесты с такими же названиями. Продолжить?")) return;
+
+    const reader = new FileReader();
+    reader.onload = ev => {
+        try {
+            const importedData = JSON.parse(ev.target.result);
+            if (!Array.isArray(importedData)) throw new Error("Неверный формат");
+
+            const tx = db.transaction(STORE_NAME, 'readwrite');
+            const store = tx.objectStore(STORE_NAME);
+            
+            importedData.forEach(test => store.put(test));
+            
+            tx.oncomplete = () => {
+                alert("Данные успешно импортированы!");
+                importInput.value = '';
+                renderCatalog();
+            };
+        } catch (err) {
+            alert("Ошибка при импорте: файл поврежден или имеет неверный формат.");
+        }
+    };
+    reader.readAsText(file);
 };
 
 document.getElementById('catalog-search').oninput = e => {

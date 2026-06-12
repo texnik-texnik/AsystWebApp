@@ -1,10 +1,11 @@
-const CACHE_NAME = 'assistant-web-v6';
+const CACHE_NAME = 'assistant-web-v8';
 const ASSETS = [
   '/',
   '/index.html',
   '/styles.css',
   '/app.js',
-  '/manifest.json'
+  '/manifest.json',
+  '/icon.svg'
 ];
 
 // Установка Service Worker и кэширование ресурсов
