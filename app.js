@@ -218,11 +218,7 @@ document.getElementById('mode-view-btn').onclick = () => {
 
 document.getElementById('dino-game-btn').onclick = () => {
     showScreen('dino');
-    // Запуск логики игры
-    gameRunning = true;
-    obstacles = [];
-    score = 0;
-    update();
+    if (window.startDinoGame) window.startDinoGame();
 };
 
 document.getElementById('dino-back-btn').onclick = () => {

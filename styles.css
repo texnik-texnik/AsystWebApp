@@ -311,3 +311,21 @@ body.dark-theme .btn-delete { background: #321A1A; }
     transform: scale(0.95);
     background-color: var(--primary-dark);
 }
+
+/* Dino Game Responsive Styling */
+#dino-canvas {
+    max-width: 100%;
+    height: auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.light-theme #dino-canvas { background: #fff; }
+.dark-theme #dino-canvas { background: #333; border-color: #555; }
+
+#dino-container {
+    padding: 20px;
+    overflow: hidden;
+}
+

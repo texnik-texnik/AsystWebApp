@@ -13,7 +13,17 @@ let gravity = 0.6;
 let isJumping = false;
 let obstacles = [];
 let gameRunning = false;
-let score = 0;
+let dinoScore = 0;
+
+window.startDinoGame = () => {
+    gameRunning = true;
+    obstacles = [];
+    dinoScore = 0;
+    dinoY = 120;
+    velocity = 0;
+    isJumping = false;
+    update();
+};
 
 function jump() {
     if (!isJumping) {
@@ -43,11 +53,11 @@ function update() {
         
         if (dinoX < obs.x + obs.width && dinoX + 30 > obs.x && dinoY + 30 > obs.y) {
             gameRunning = false;
-            alert('Game Over! Score: ' + Math.floor(score));
+            alert('Game Over! Score: ' + Math.floor(dinoScore));
         }
     });
 
-    score += 0.1;
+    dinoScore += 0.1;
     draw();
     requestAnimationFrame(update);
 }
@@ -62,8 +72,6 @@ function draw() {
 }
 
 dinoBackBtn.addEventListener('click', () => {
-    screenDino.classList.add('hidden');
-    screenWelcome.classList.remove('hidden');
     gameRunning = false;
 });
 
