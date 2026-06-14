@@ -13,7 +13,10 @@ dbRequest.onupgradeneeded = e => {
     db = e.target.result;
     if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME, { keyPath: 'name' });
 };
-dbRequest.onsuccess = e => { db = e.target.result; renderCatalog(); };
+dbRequest.onsuccess = e => { 
+    db = e.target.result; 
+    loadDefaultTests().then(() => renderCatalog());
+};
 
 // --- 2. State ---
 let currentQuiz = { name: '', questions: [], activeQuestions: [] };
@@ -23,7 +26,67 @@ let isAnswered = false;
 let currentMode = 'quiz'; // 'quiz', 'view', 'mistakes'
 let catalogData = [];
 
-// --- 3. DOM Elements ---
+// --- 3. Default Tests ---
+const DEFAULT_TESTS = [
+    'Анатомияи одам - 200 руси.txt',
+    'Гистология руси.txt',
+    'гостест стом 5000 ха.txt',
+    'детс стом 600.txt',
+    'материал 200.txt',
+    'Ортодонтия 600.txt',
+    'ортопед 600.txt',
+    'проп ортопед 200.txt',
+    'проп терап 200.txt',
+    'терстом 600.txt',
+    'Физиология нормали руси.txt',
+    'хирург проп 200.txt',
+    'хирургия 600.txt',
+    'хирургия детс 600.txt'
+];
+
+async function loadDefaultTests() {
+    return new Promise((resolve) => {
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const store = tx.objectStore(STORE_NAME);
+        const countRequest = store.count();
+
+        countRequest.onsuccess = async () => {
+            if (countRequest.result === 0) {
+                console.log("Initializing default tests...");
+                for (const fileName of DEFAULT_TESTS) {
+                    try {
+                        const response = await fetch(`Tests/${encodeURIComponent(fileName)}`);
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        const text = await response.text();
+                        const questions = parseTestContent(text);
+                        if (questions.length > 0) {
+                            await new Promise((resolvePut, rejectPut) => {
+                                const writeTx = db.transaction(STORE_NAME, 'readwrite');
+                                const putRequest = writeTx.objectStore(STORE_NAME).put({
+                                    name: fileName,
+                                    questions,
+                                    lastScore: null,
+                                    highScore: null,
+                                    lastIndexView: 0,
+                                    failedIds: [],
+                                    date: Date.now()
+                                });
+                                writeTx.oncomplete = resolvePut;
+                                writeTx.onerror = rejectPut;
+                            });
+                        }
+                    } catch (err) {
+                        console.error(`Failed to load default test: ${fileName}`, err);
+                    }
+                }
+            }
+            resolve();
+        };
+        countRequest.onerror = () => resolve();
+    });
+}
+
+// --- 4. DOM Elements ---
 const screens = {
     welcome: document.getElementById('screen-welcome'),
     quiz: document.getElementById('screen-quiz'),
@@ -32,7 +95,7 @@ const screens = {
     dino: document.getElementById('screen-dino')
 };
 
-// --- 4. Theme, Search & Backup ---
+// --- 5. Theme, Search & Backup ---
 const themeToggle = document.getElementById('theme-toggle');
 const exportBtn = document.getElementById('export-db');
 const importInput = document.getElementById('import-db-input');
@@ -84,7 +147,7 @@ document.getElementById('catalog-search').oninput = e => {
     renderCatalogUI(catalogData.filter(t => t.name.toLowerCase().includes(term)));
 };
 
-// --- 5. Robust Parser ---
+// --- 6. Robust Parser ---
 function parseTestContent(text) {
     const lines = text.replace(/\r/g, '').split('\n');
     const questions = [];
@@ -112,7 +175,7 @@ function parseTestContent(text) {
     return questions.map(q => ({ id: q.id, question: q.questionParts.join(' ').trim(), options: q.options })).filter(q => q.question !== '');
 }
 
-// --- 6. Catalog Logic ---
+// --- 7. Catalog Logic ---
 document.getElementById('fileInput').addEventListener('change', e => {
     const file = e.target.files[0];
     if (!file) return;
@@ -178,7 +241,7 @@ window.deleteTest = name => {
     }
 };
 
-// --- 7. Mode Selection ---
+// --- 8. Mode Selection ---
 window.openModeSelection = name => {
     const store = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME);
     store.get(name).onsuccess = e => {
@@ -213,7 +276,7 @@ document.getElementById('mode-mistakes-btn').onclick = () => {
 
 document.getElementById('mode-view-btn').onclick = () => {
     document.getElementById('modal-mode').classList.add('hidden');
-    showScreen('view');
+    startQuizMode('view');
 };
 
 document.getElementById('dino-game-btn').onclick = () => {
@@ -238,7 +301,7 @@ document.querySelectorAll('.back-to-catalog').forEach(b => b.onclick = () => {
 
 document.getElementById('restartBtn').onclick = () => showScreen('welcome');
 
-// --- 8. Quiz Mode (Standard & Mistakes) ---
+// --- 9. Quiz Mode (Standard & Mistakes) ---
 function startQuizMode(mode) {
     currentMode = mode;
     currentQuestionIndex = 0;
@@ -247,6 +310,9 @@ function startQuizMode(mode) {
     if (mode === 'mistakes') {
         const failedQuestions = currentQuiz.questions.filter(q => currentQuiz.failedIds.includes(q.id));
         currentQuiz.activeQuestions = JSON.parse(JSON.stringify(failedQuestions));
+    } else if (mode === 'view') {
+        startViewMode();
+        return;
     } else {
         const selectedCount = parseInt(document.getElementById('exam-q-count').value) || currentQuiz.questions.length;
         const allQuestions = JSON.parse(JSON.stringify(currentQuiz.questions));
@@ -254,7 +320,7 @@ function startQuizMode(mode) {
         currentQuiz.activeQuestions = allQuestions.slice(0, selectedCount);
     }
     
-    if (mode !== 'mistakes') shuffle(currentQuiz.activeQuestions);
+    if (mode !== 'mistakes' && mode !== 'view') shuffle(currentQuiz.activeQuestions);
     showScreen('quiz');
     renderQuizQuestion();
 }
