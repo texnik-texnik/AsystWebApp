@@ -173,11 +173,39 @@
         <header class="quiz-header">
             <div class="header-top">
                 <button id="dino-back-btn" class="back-to-catalog icon-btn">✕</button>
-                <span>Dino Game</span>
+                <div class="game-title-group">
+                    <span class="game-title">Dino Run</span>
+                </div>
+                <div class="game-score-board">
+                    <span id="game-hi-score">HI 00000</span>
+                    <span id="game-current-score">00000</span>
+                </div>
             </div>
         </header>
-        <div id="dino-container" style="display:flex; justify-content:center; align-items:center; height: 80vh;">
-            <canvas id="dino-canvas" width="600" height="150" style="border: 1px solid #ccc;"></canvas>
+        
+        <div id="dino-wrapper">
+            <div id="dino-container">
+                <canvas id="dino-canvas" width="600" height="200"></canvas>
+                
+                <!-- Overlay for Start/Game Over -->
+                <div id="dino-overlay" class="dino-overlay">
+                    <div id="dino-start-content">
+                        <div class="dino-big-icon">🦖</div>
+                        <h2>Ready to Run?</h2>
+                        <button id="dino-start-btn" class="btn-primary-centered">Start Game</button>
+                    </div>
+                    <div id="dino-death-content" class="hidden">
+                        <div class="dino-big-icon">👻</div>
+                        <h2>Game Over</h2>
+                        <p id="final-score-text">Score: 0</p>
+                        <button id="dino-restart-btn" class="btn-primary-centered">Play Again</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="game-controls-hint">
+                <p>Tap screen or Press <b>Space</b> to Jump</p>
+            </div>
         </div>
     </section>
 

@@ -312,20 +312,113 @@ body.dark-theme .btn-delete { background: #321A1A; }
     background-color: var(--primary-dark);
 }
 
-/* Dino Game Responsive Styling */
-#dino-canvas {
-    max-width: 100%;
-    height: auto;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+/* --- Dino Game Enhanced UI --- */
+#dino-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    height: calc(100vh - 80px);
+    background: var(--bg-main);
 }
-
-.light-theme #dino-canvas { background: #fff; }
-.dark-theme #dino-canvas { background: #333; border-color: #555; }
 
 #dino-container {
-    padding: 20px;
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    background: #fff;
+    border-radius: 16px;
     overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    border: 4px solid var(--border-color);
 }
+
+.dark-theme #dino-container {
+    background: #222;
+    border-color: #444;
+}
+
+#dino-canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: transparent;
+}
+
+/* Overlays */
+.dino-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    text-align: center;
+    color: white;
+}
+
+.dino-overlay.hidden { display: none; }
+
+.dino-big-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+}
+
+.dino-overlay h2 {
+    font-size: 32px;
+    margin-bottom: 24px;
+    color: #fff;
+}
+
+/* Score Board */
+.game-score-board {
+    display: flex;
+    gap: 15px;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    color: var(--text-main);
+}
+
+#game-hi-score { color: var(--text-sub); opacity: 0.7; }
+#game-current-score { color: var(--primary-color); font-size: 1.1em; }
+
+.game-title {
+    font-weight: 900;
+    font-size: 20px;
+    color: var(--primary-color);
+    letter-spacing: 1px;
+}
+
+.game-controls-hint {
+    margin-top: 20px;
+    color: var(--text-sub);
+    font-size: 14px;
+    text-align: center;
+}
+
+.game-controls-hint b {
+    background: var(--card-bg);
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+/* Button override for game */
+#dino-start-btn, #dino-restart-btn {
+    width: 200px;
+    padding: 15px;
+    font-size: 18px;
+}
+
 
