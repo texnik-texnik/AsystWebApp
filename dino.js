@@ -61,15 +61,6 @@ function draw() {
     obstacles.forEach(obs => ctx.fillRect(obs.x, obs.y, obs.width, obs.height));
 }
 
-dinoGameBtn.addEventListener('click', () => {
-    screenWelcome.classList.add('hidden');
-    screenDino.classList.remove('hidden');
-    gameRunning = true;
-    obstacles = [];
-    score = 0;
-    update();
-});
-
 dinoBackBtn.addEventListener('click', () => {
     screenDino.classList.add('hidden');
     screenWelcome.classList.remove('hidden');
