@@ -22,6 +22,7 @@
                     <label for="import-db-input" class="icon-btn" title="Импорт базы">📂</label>
                     <input type="file" id="import-db-input" accept=".json" style="display:none">
                     <button id="theme-toggle" class="icon-btn" title="Сменить тему">🌓</button>
+                    <button id="dino-game-btn" class="icon-btn" title="Dino Game">🦖</button>
                     <label for="fileInput" class="icon-btn-add">
                         <span>+</span>
                         <input type="file" id="fileInput" accept=".txt">
@@ -123,6 +124,35 @@
         </footer>
     </section>
 
+    <script>
+        // Добавление поддержки свайпов
+        let touchstartX = 0;
+        let touchendX = 0;
+        const screenView = document.getElementById('screen-viewing');
+
+        screenView.addEventListener('touchstart', e => {
+            touchstartX = e.changedTouches[0].screenX;
+        }, false);
+
+        screenView.addEventListener('touchend', e => {
+            touchendX = e.changedTouches[0].screenX;
+            handleGesture();
+        }, false);
+
+        function handleGesture() {
+            if (touchendX < touchstartX - 50) {
+                // Свайп влево -> Следующий
+                const btn = document.getElementById('nextQuestionBtn');
+                if (!btn.disabled) btn.click();
+            }
+            if (touchendX > touchstartX + 50) {
+                // Свайп вправо -> Предыдущий
+                const btn = document.getElementById('prevQuestionBtn');
+                if (!btn.disabled) btn.click();
+            }
+        }
+    </script>
+
     <!-- Экран 3: Результаты -->
     <section id="screen-results" class="screen hidden">
         <div class="content">
@@ -138,6 +168,20 @@
         </div>
     </section>
 
+    <!-- Экран 5: Dino Game -->
+    <section id="screen-dino" class="screen hidden">
+        <header class="quiz-header">
+            <div class="header-top">
+                <button id="dino-back-btn" class="back-to-catalog icon-btn">✕</button>
+                <span>Dino Game</span>
+            </div>
+        </header>
+        <div id="dino-container" style="display:flex; justify-content:center; align-items:center; height: 80vh;">
+            <canvas id="dino-canvas" width="600" height="150" style="border: 1px solid #ccc;"></canvas>
+        </div>
+    </section>
+
     <script src="app.js"></script>
+    <script src="dino.js"></script>
 </body>
 </html>

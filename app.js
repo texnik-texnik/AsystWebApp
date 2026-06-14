@@ -28,7 +28,8 @@ const screens = {
     welcome: document.getElementById('screen-welcome'),
     quiz: document.getElementById('screen-quiz'),
     view: document.getElementById('screen-viewing'),
-    results: document.getElementById('screen-results')
+    results: document.getElementById('screen-results'),
+    dino: document.getElementById('screen-dino')
 };
 
 // --- 4. Theme, Search & Backup ---
@@ -36,7 +37,6 @@ const themeToggle = document.getElementById('theme-toggle');
 const exportBtn = document.getElementById('export-db');
 const importInput = document.getElementById('import-db-input');
 
-// Экспорт базы данных
 exportBtn.onclick = () => {
     const store = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME);
     store.getAll().onsuccess = e => {
@@ -51,7 +51,6 @@ exportBtn.onclick = () => {
     };
 };
 
-// Импорт базы данных
 importInput.onchange = e => {
     const file = e.target.files[0];
     if (!file) return;
@@ -96,7 +95,7 @@ function parseTestContent(text) {
         if (trimmed.startsWith('?')) {
             if (currentQ && currentQ.options.length > 0) questions.push(currentQ);
             currentQ = { 
-                id: Date.now() + index, // Уникальный ID для отслеживания ошибок
+                id: Date.now() + index, 
                 questionParts: [trimmed.substring(1).trim()], 
                 options: [] 
             };
@@ -128,7 +127,7 @@ document.getElementById('fileInput').addEventListener('change', e => {
                 lastScore: null, 
                 highScore: null, 
                 lastIndexView: 0,
-                failedIds: [], // Список ID вопросов с ошибками
+                failedIds: [], 
                 date: Date.now() 
             });
             tx.oncomplete = () => { e.target.value = ''; renderCatalog(); };
@@ -214,7 +213,15 @@ document.getElementById('mode-mistakes-btn').onclick = () => {
 
 document.getElementById('mode-view-btn').onclick = () => {
     document.getElementById('modal-mode').classList.add('hidden');
-    startViewMode();
+    showScreen('view');
+};
+
+document.getElementById('dino-game-btn').onclick = () => {
+    showScreen('dino');
+};
+
+document.getElementById('dino-back-btn').onclick = () => {
+    showScreen('welcome');
 };
 
 function showScreen(id) {
@@ -281,19 +288,15 @@ function handleAnswer(btn, isCorrect, qId) {
     if (isCorrect) {
         score++;
         btn.classList.add('correct');
-        // Вибрация: Короткая при успехе
         if (navigator.vibrate) navigator.vibrate(40);
         
-        // Удаляем из ошибок, если ответили верно
         if (currentQuiz.failedIds) {
             currentQuiz.failedIds = currentQuiz.failedIds.filter(id => id !== qId);
         }
     } else {
         btn.classList.add('wrong');
-        // Вибрация: Двойная при ошибке
         if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
         
-        // Добавляем в ошибки
         if (!currentQuiz.failedIds) currentQuiz.failedIds = [];
         if (!currentQuiz.failedIds.includes(qId)) currentQuiz.failedIds.push(qId);
         
@@ -324,7 +327,6 @@ function finishQuiz() {
     const tx = db.transaction(STORE_NAME, 'readwrite');
     const store = tx.objectStore(STORE_NAME);
     
-    // Сохраняем статистику только для обычного режима
     if (currentMode === 'quiz') {
         currentQuiz.lastScore = score;
         if (currentQuiz.highScore === null || score > currentQuiz.highScore) {
@@ -378,7 +380,6 @@ function renderViewQuestion() {
     document.getElementById('prevQuestionBtn').disabled = (currentQuestionIndex === 0);
     document.getElementById('nextQuestionBtn').disabled = (currentQuestionIndex === total - 1);
     
-    // Автосохранение
     const tx = db.transaction(STORE_NAME, 'readwrite');
     currentQuiz.lastIndexView = currentQuestionIndex;
     tx.objectStore(STORE_NAME).put(currentQuiz);
@@ -403,4 +404,4 @@ function shuffle(array) {
 }
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
-or.serviceWorker.register('/sw.js');
+
