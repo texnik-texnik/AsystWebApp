@@ -1,4 +1,4 @@
-# Assistant Web (PWA Quiz App) - Project Instructions
+# Ассистент (PWA Quiz App) - Project Instructions
 
 This project is a modern, offline-first Progressive Web App (PWA) designed for exam preparation. It transforms simple text files into interactive quiz modules.
 

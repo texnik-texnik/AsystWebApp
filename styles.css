@@ -10,7 +10,9 @@
     --success: #28A745;
     --border-color: #E9ECEF;
     --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    --border-radius: 16px;
 }
+
 
 body.dark-theme {
     /* Темная тема */
@@ -89,6 +91,8 @@ body, html {
     font-size: 11px; padding: 2px 8px; border-radius: 4px;
     background: var(--bg-color); color: var(--text-sub);
 }
+.stat-tag-mistakes { background: #FFF3E0; color: #E65100; }
+body.dark-theme .stat-tag-mistakes { background: #3A2A12; color: #FFB74D; }
 
 .card-actions { display: flex; gap: 8px; }
 .btn-run { flex: 1; background: var(--primary-color); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 600; }
@@ -266,6 +270,7 @@ body.dark-theme .btn-delete { background: #321A1A; }
 
 .option-btn.correct { background: var(--success) !important; border-color: var(--success); color: white; }
 .option-btn.wrong { background: var(--danger) !important; border-color: var(--danger); color: white; }
+.option-btn.no-correct { background: #607D8B !important; border-color: #607D8B; color: white; }
 .option-btn.correct-view { border-color: var(--success); background-color: rgba(40, 167, 69, 0.1); }
 
 .view-toolbar { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--card-bg); padding: 15px 15px 30px; box-shadow: 0 -4px 16px rgba(0,0,0,0.1); }
@@ -319,7 +324,7 @@ body.dark-theme .btn-delete { background: #321A1A; }
     align-items: center;
     padding: 10px;
     height: calc(100vh - 80px);
-    background: var(--bg-main);
+    background: var(--bg-color);
 }
 
 #dino-container {
@@ -422,3 +427,41 @@ body.dark-theme .btn-delete { background: #321A1A; }
 }
 
 
+
+
+/* Utility layouts */
+.header-top, .nav-buttons, .jump-block {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.nav-buttons { margin-top: 10px; }
+.jump-block input {
+    width: 90px;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-color);
+    color: var(--text-main);
+}
+.btn-mini {
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    background: var(--primary-color);
+    color: #fff;
+    font-weight: 700;
+}
+#screen-results .content {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+    text-align: center;
+}
+.result-icon { font-size: 64px; margin-bottom: 10px; }
+.score-container { font-size: 44px; font-weight: 900; margin: 12px 0; }
+.score-divider { color: var(--text-sub); font-size: 24px; margin: 0 8px; }

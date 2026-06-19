@@ -2,8 +2,8 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Assistant Web</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Ассистент</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/svg+xml" href="icon.svg">
@@ -16,14 +16,14 @@
     <section id="screen-welcome" class="screen">
         <header class="main-header">
             <div class="header-top-row">
-                <h1>Assistant</h1>
+                <h1>Ассистент</h1>
                 <div class="header-actions">
-                    <button id="export-db" class="icon-btn" title="Экспорт базы">💾</button>
-                    <label for="import-db-input" class="icon-btn" title="Импорт базы">📂</label>
+                    <button id="export-db" class="icon-btn" title="Экспорт базы" aria-label="Экспорт базы">💾</button>
+                    <label for="import-db-input" class="icon-btn" title="Импорт базы" aria-label="Импорт базы">📂</label>
                     <input type="file" id="import-db-input" accept=".json" style="display:none">
-                    <button id="theme-toggle" class="icon-btn" title="Сменить тему">🌓</button>
-                    <button id="dino-game-btn" class="icon-btn" title="Dino Game">🦖</button>
-                    <label for="fileInput" class="icon-btn-add">
+                    <button id="theme-toggle" class="icon-btn" title="Сменить тему" aria-label="Сменить тему">🌓</button>
+                    <button id="dino-game-btn" class="icon-btn" title="Dino Game" aria-label="Dino Game">🦖</button>
+                    <label for="fileInput" class="icon-btn-add" aria-label="Добавить тест">
                         <span>+</span>
                         <input type="file" id="fileInput" accept=".txt">
                     </label>
@@ -191,20 +191,20 @@
                 <div id="dino-overlay" class="dino-overlay">
                     <div id="dino-start-content">
                         <div class="dino-big-icon">🦖</div>
-                        <h2>Ready to Run?</h2>
-                        <button id="dino-start-btn" class="btn-primary-centered">Start Game</button>
+                        <h2>Готов к забегу?</h2>
+                        <button id="dino-start-btn" class="btn-primary-centered">Старт</button>
                     </div>
                     <div id="dino-death-content" class="hidden">
                         <div class="dino-big-icon">👻</div>
-                        <h2>Game Over</h2>
-                        <p id="final-score-text">Score: 0</p>
-                        <button id="dino-restart-btn" class="btn-primary-centered">Play Again</button>
+                        <h2>Игра окончена</h2>
+                        <p id="final-score-text">Счёт: 0</p>
+                        <button id="dino-restart-btn" class="btn-primary-centered">Играть снова</button>
                     </div>
                 </div>
             </div>
             
             <div class="game-controls-hint">
-                <p>Tap screen or Press <b>Space</b> to Jump</p>
+                <p>Тап/Space/↑ — прыжок · ↓ — пригнуться · P — пауза</p>
             </div>
         </div>
     </section>
